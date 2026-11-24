@@ -1,0 +1,23 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'cy.kw7.call'
+    compileSdk 34
+    defaultConfig {
+        applicationId 'cy.kw7.call'
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+    }
+    // The key is made fresh on GitHub for each build and never saved: KS_FILE / KS_PASS come from the workflow
+    signingConfigs {
+        release {
+            storeFile file(System.getenv('KS_FILE') ?: 'kw7.jks')
+            storePassword System.getenv('KS_PASS')
+            keyAlias 'kw7'
+            keyPassword System.getenv('KS_PASS')
+        }
+    }
+    buildTypes { release { minifyEnabled false; signingConfig signingConfigs.release } }
+    lint { abortOnError false; checkReleaseBuilds false }
+}

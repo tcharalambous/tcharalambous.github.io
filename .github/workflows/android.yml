@@ -1,0 +1,44 @@
+name: Build KW7 Call
+on:
+  push:
+    paths: ['android/**', '.github/workflows/android.yml']
+  workflow_dispatch: {}
+permissions:
+  contents: write
+  pages: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: '8.9' }
+      # A signing key made here and thrown away after the build: it never leaves this machine
+      - name: Signing key
+        run: |
+          PASS=$(openssl rand -hex 16); echo "::add-mask::$PASS"
+          echo "KS_PASS=$PASS" >> "$GITHUB_ENV"; echo "KS_FILE=$RUNNER_TEMP/kw7.jks" >> "$GITHUB_ENV"
+          keytool -genkeypair -keystore "$RUNNER_TEMP/kw7.jks" -alias kw7 -keyalg RSA -keysize 2048 -validity 10000 -storepass "$PASS" -keypass "$PASS" -dname "CN=KW7 Call"
+          FP=$(keytool -list -v -keystore "$RUNNER_TEMP/kw7.jks" -storepass "$PASS" -alias kw7 | awk '/SHA256:/{print $2; exit}')
+          echo "FP=$FP" >> "$GITHUB_ENV"
+      - name: Build
+        working-directory: android
+        run: gradle assembleRelease --no-daemon --stacktrace
+      # Lets Android open https://tcharalambous.github.io/call links in the app without asking
+      - name: Link the app to the call page
+        run: |
+          mkdir -p .well-known
+          printf '[{"relation":["delegate_permission/common.handle_all_urls"],"target":{"namespace":"android_app","package_name":"cy.kw7.call","sha256_cert_fingerprints":["%s"]}}]\n' "$FP" > .well-known/assetlinks.json
+          git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .well-known/assetlinks.json
+          git commit -m "Link KW7 Call to the call page" && git push || echo "unchanged"
+          gh api -X POST "repos/${{ github.repository }}/pages/builds" || true
+        env: { GH_TOKEN: '${{ github.token }}' }
+      - name: Publish the app
+        run: |
+          cp android/app/build/outputs/apk/release/app-release.apk kw7-call.apk
+          gh release delete kw7-call --yes --cleanup-tag || true
+          gh release create kw7-call kw7-call.apk --title "KW7 Call" --notes "Install on your phone so KW7CRM's Call button opens the dialler, from the Claude app too."
+        env: { GH_TOKEN: '${{ github.token }}' }
