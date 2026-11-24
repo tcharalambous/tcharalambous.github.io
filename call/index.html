@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>KW7CRM call</title>
+<style>
+  :root { --ink: #1c1c1c; --mute: #5f6368; --good: #1d7a4c; --bg: #f7f7f7; }
+  @media (prefers-color-scheme: dark) { :root { --ink: #eee; --mute: #aab; --good: #3fb37a; --bg: #151718; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--bg); color: var(--ink); font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; padding: 24px 16px; }
+  main { width: min(380px, 100%); text-align: center; display: grid; gap: 14px; }
+  .k { margin: 0; font-weight: 800; letter-spacing: .04em; color: #b30000; }
+  h1 { margin: 0; font-size: 28px; font-variant-numeric: tabular-nums; }
+  .call { display: block; padding: 16px; border-radius: 999px; background: var(--good); color: #fff; font-size: 19px; font-weight: 700; text-decoration: none; }
+  .call[hidden] { display: none; }
+  p { margin: 0; color: var(--mute); font-size: 14.5px; }
+</style>
+</head>
+<body>
+<main>
+  <p class="k">KW7CRM</p>
+  <h1 id="num">Call</h1>
+  <a class="call" id="go" href="#" hidden>Call</a>
+  <p id="hint">Opening your phone's dialler…</p>
+  <p>When you're done, go back to KW7CRM to mark what came of the call.</p>
+</main>
+<script>
+  // The number comes after the # (e.g. #+35799123456), which browsers never send to the server.
+  // This page keeps nothing: it only hands the number to the phone's dialler.
+  (function () {
+    var raw = ""; try { raw = decodeURIComponent(location.hash.slice(1)); } catch (e) { raw = location.hash.slice(1); }
+    var tel = raw.replace(/[^\d+]/g, "").replace(/(?!^)\+/g, "");
+    var go = document.getElementById("go"), num = document.getElementById("num"), hint = document.getElementById("hint");
+    if (tel.replace(/\D/g, "").length < 3) { num.textContent = "No number"; hint.textContent = "Open the dialler in KW7CRM and press Call again."; return; }
+    num.textContent = tel; go.href = "tel:" + tel; go.textContent = "Call " + tel; go.hidden = false;
+    try { location.href = "tel:" + tel; } catch (e) {}
+    setTimeout(function () { hint.textContent = "If your dialler didn't open, tap Call."; }, 1200);
+  })();
+</script>
+</body>
+</html>
