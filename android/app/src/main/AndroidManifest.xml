@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.CALL_PHONE" />
+    <!-- Refresh from my phone: the contacts' names and numbers go into Downloads/kw7-contacts.vcf for KW7CRM -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
     <application
         android:label="KW7 Call"
         android:icon="@drawable/ic_launcher"
         android:allowBackup="false"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
-        <!-- KW7CRM's Call links (https://tcharalambous.github.io/call/#+357...) open here, then the phone's dialler -->
+        <!-- KW7CRM's links open here: Call (https://tcharalambous.github.io/call/#+357...) and Refresh from my phone (/call/contacts) -->
         <activity
             android:name=".CallActivity"
             android:exported="true"

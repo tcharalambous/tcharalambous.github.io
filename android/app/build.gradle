@@ -6,16 +6,18 @@ android {
         applicationId 'cy.kw7.call'
         minSdk 24
         targetSdk 34
-        versionCode 1
-        versionName '1.0'
+        // each GitHub build counts up, so a new KW7 Call installs over the old one
+        versionCode Integer.parseInt(System.getenv('GITHUB_RUN_NUMBER') ?: '1') + 100
+        versionName '2.' + (System.getenv('GITHUB_RUN_NUMBER') ?: '0')
     }
-    // The key is made fresh on GitHub for each build and never saved: KS_FILE / KS_PASS come from the workflow
+    // One lasting key (android/kw7-call.jks), so every new build installs over the one before.
+    // It only proves a KW7 Call build came from this repository's key; install KW7 Call only from KW7CRM's link.
     signingConfigs {
         release {
-            storeFile file(System.getenv('KS_FILE') ?: 'kw7.jks')
-            storePassword System.getenv('KS_PASS')
+            storeFile rootProject.file('kw7-call.jks')
+            storePassword 'kw7-call'
             keyAlias 'kw7'
-            keyPassword System.getenv('KS_PASS')
+            keyPassword 'kw7-call'
         }
     }
     buildTypes { release { minifyEnabled false; signingConfig signingConfigs.release } }

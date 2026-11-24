@@ -19,9 +19,10 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import java.util.Map;
 
-/** The app's one screen: what it does, and the two switches it needs (phone calls, and KW7CRM's call links). */
+/** The app's one screen: what it does, and what it needs (phone calls, KW7CRM's call links, reading contacts). */
 public class MainActivity extends Activity {
     static final String HOST = "tcharalambous.github.io";
+    private String saved = "";
 
     @Override protected void onResume() { super.onResume(); show(); }
 
@@ -47,7 +48,7 @@ public class MainActivity extends Activity {
         l.setOrientation(LinearLayout.VERTICAL);
         l.setPadding(dp(24), dp(40), dp(24), dp(24));
         l.addView(text("KW7 Call", 28, true, Color.rgb(179, 0, 0)));
-        l.addView(text("Press Call in KW7CRM, even inside the Claude app, and this opens your phone's dialler with the number. You don't need to open it again once both switches below are on.", 16, false, ink));
+        l.addView(text("Press Call in KW7CRM, even inside the Claude app, and this calls the number. Tap Refresh from my phone in KW7CRM's dialler, and this hands KW7CRM your phone's contacts. You don't need to open it again once everything below is on.", 16, false, ink));
 
         boolean calls = checkSelfPermission(Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED;
         l.addView(text((calls ? "✓ " : "1. ") + "Phone calls: " + (calls ? "allowed. Call rings straight away." : "not allowed yet. The dialler opens with the number and you press call."), 16, true, ink));
@@ -57,7 +58,24 @@ public class MainActivity extends Activity {
         l.addView(text((links ? "✓ " : "2. ") + "KW7CRM's Call links: " + (links ? "open in KW7 Call." : "not on yet. Tap below, then Add link and tick " + HOST + "."), 16, true, ink));
         if (!links) l.addView(button("Turn on KW7CRM's Call links", v -> openLinkSettings()));
 
-        l.addView(text("This app keeps nothing and sends nothing anywhere. KW7CRM records the call itself.", 14, false, mute));
+        boolean cts = CallActivity.contactsAllowed(this);
+        l.addView(text((cts ? "✓ " : "3. ") + "Contacts for KW7CRM: " + (cts ? "allowed. Refresh from my phone in KW7CRM's dialler brings them in." : "not allowed yet. KW7CRM's Refresh from my phone needs it."), 16, true, ink));
+        if (!cts) l.addView(button("Allow reading contacts", v -> requestPermissions(CallActivity.contactPerms(), 2)));
+        else {
+            l.addView(button("Save contacts for KW7CRM now", v -> {
+                saved = "Saving…"; show();
+                new Thread(() -> {
+                    String m;
+                    try { m = ContactsExport.save(getApplicationContext()) + " contacts saved in Downloads as " + ContactsExport.FILE + ". In KW7CRM's dialler, tap Update phone contacts and pick it."; }
+                    catch (Exception e) { m = "Couldn't save your contacts. Try again."; }
+                    final String mm = m;
+                    runOnUiThread(() -> { saved = mm; show(); });
+                }).start();
+            }));
+            if (!saved.isEmpty()) l.addView(text(saved, 14, false, ink));
+        }
+
+        l.addView(text("KW7 Call sends nothing anywhere. Your contacts go only into the file in your phone's Downloads, which you then pick in KW7CRM. KW7CRM records calls itself.", 14, false, mute));
         ScrollView s = new ScrollView(this);
         s.setBackgroundColor(Color.rgb(247, 247, 247));
         s.addView(l);
