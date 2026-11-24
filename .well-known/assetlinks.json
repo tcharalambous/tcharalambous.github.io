@@ -1,1 +1,1 @@
-[{"relation":["delegate_permission/common.handle_all_urls"],"target":{"namespace":"android_app","package_name":"cy.kw7.call","sha256_cert_fingerprints":["4D:9B:73:8C:DA:EB:A3:29:DF:09:55:31:33:EF:8B:A3:6A:2F:12:E9:31:84:8A:1E:2B:D3:4F:64:C2:3E:17:21"]}}]
+[{"relation":["delegate_permission/common.handle_all_urls"],"target":{"namespace":"android_app","package_name":"cy.kw7.call","sha256_cert_fingerprints":["49:9D:19:3F:3E:98:14:D8:DD:66:C1:BD:AD:87:A5:8D:44:DF:BF:12:66:CC:50:9D:0C:66:67:0A:00:D0:57:EF"]}}]
